@@ -11,7 +11,7 @@ pipeline{
          steps{
             //Welcome message
             script{
-               sh "cowsay welcome"
+              
                sh "echo 'Welcome to Jenkins'"
 }
 }
