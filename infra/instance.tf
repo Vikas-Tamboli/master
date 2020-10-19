@@ -30,7 +30,7 @@ esource "aws_security_group" "test_sg" {
 }
 
 
-#********creating ec2-instance***********
+#********creating ec2-instance********
 
 resource "aws_instance" "shubham" {
         ami = var.ami
