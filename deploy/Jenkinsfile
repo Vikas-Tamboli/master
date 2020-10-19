@@ -1,0 +1,100 @@
+pipeline{
+  agent any
+  environment {
+	AC_KEY = credentials('AWS_ACCESS_KEY')
+	SEC_KEY = credentials('AWS_SECRET_KEY')
+
+}
+  stages {
+   stage("Opening"){
+         steps{
+            //Welcome message
+            script{
+               sh "cowsay welcome"
+               sh "echo 'Welcome to Jenkins'"
+}
+}
+}
+
+   stage("Workspace_cleanup"){
+        //Cleaning WorkSpace
+        steps{
+            step([$class: 'WsCleanup'])
+}
+}
+
+   stage("Repo_clone"){
+       //Clone repo from GitHub
+      steps {
+         checkout ([$class: 'GitSCM', branches: [[name: '*/master']], userRemoteConfigs: [[credentialsId: 'jenkins', url: 'git@github.com:Vikas-Tamboli/master.git']]])
+
+}
+}
+   stage("terraform_init"){
+     //terraform init
+     steps{
+      script{
+       sh '''
+         cowsay terraform init
+         cd ..
+         cd infra
+         bash plugins.sh $AC_KEY $SEC_KEY
+         cd -
+       '''
+}
+}
+}
+
+   stage("static_analysis"){
+     //static analysis
+       
+      steps{
+       script{
+       sh '''
+            cowsay static_analysis
+            cd ..
+            cd infra
+            terraform validate 
+            cd -
+       '''
+}
+}
+}
+
+   stage("terraform_plan"){
+     //terraform plan
+       
+      steps{
+       script{
+       sh '''
+            cowsay terraform_plan
+            cd ..
+            cd infra
+            terraform plan -var "a_key=$AC_KEY" -var "s_key=$SEC_KEY"
+            cd -
+       '''
+}
+}
+}
+
+
+   stage("terraform_apply"){
+    //terraform apply
+     steps{
+      script{
+       sh '''
+            cowsay terraform_apply
+            cd .. 
+            cd infra
+            terraform apply --auto-approve -var "a_key=$AC_KEY" -var "s_key=$SEC_KEY"
+
+            cd -
+       '''
+
+}
+}
+}
+
+
+}
+}
